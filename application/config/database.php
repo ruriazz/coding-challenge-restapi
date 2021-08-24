@@ -77,7 +77,7 @@ $db['default'] = array(
 	'dsn'	=> '',
 	'hostname' => 'localhost',
 	'username' => 'challenge',
-	'password' => '9bte&xS?P;sHn:+jXf8jF',
+
 	'database' => 'challenge',
 	'dbdriver' => 'mysqli',
 	'dbprefix' => '',
