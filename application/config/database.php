@@ -94,9 +94,3 @@ $db['default'] = array(
 	'failover' => array(),
 	'save_queries' => TRUE
 );
-
-/*
-CREATE USER 'sisdabima_app_access'@'localhost' IDENTIFIED BY 'WJ5@A!f%aKKs284Y#7R$Y&wkFRpZhqjn';
-GRANT ALL PRIVILEGES ON sisdabima_app.* TO 'sisdabima_app_access'@'localhost';
-FLUSH PRIVILEGES;
-*/
