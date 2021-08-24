@@ -604,7 +604,7 @@ $config['allow_any_cors_domain'] = TRUE;
 | e.g. $config['allowed_origins'] = ['http://www.example.com', 'https://spa.example.com']
 |
 */
-$config['allowed_cors_origins'] = ['*'];
+$config['allowed_cors_origins'] = ['https://aziz.warkopwarawiri.id'];
 
 /*
 |--------------------------------------------------------------------------

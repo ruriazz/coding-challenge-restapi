@@ -4,7 +4,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 class Payment_model extends CI_Model {
 
     public ?String $id = null;
-    public ?float $total_payment = null;
+    public ?int $total_payment = null;
     public $submiter = null;
     public ?array $member = array();
     public ?int $time_stored;
@@ -49,6 +49,23 @@ class Payment_model extends CI_Model {
         $this->submiter = $userModel;
     }
 
+    public function get_all_data() {
+        $data = array();
+        $results = $this->db->select('id')
+                            ->from(Payment_model::table)
+                            ->order_by('time_stored', 'DESC')
+                            ->get()->result_array();
+
+        foreach ($results as $result) {
+            $paymentModel = new Payment_model($result);
+            $paymentModel->get_data('id');
+
+            array_push($data, $paymentModel);
+        }
+
+        return $data;
+    }
+
     public function get_member() {
         $this->member = $this->member_model->get_as_list(['payment' => $this->id]);
     }
@@ -67,7 +84,16 @@ class Payment_model extends CI_Model {
     }
 
     public function update_data($newData) {
+        $data = array(
+            'total_payment' => $newData->total_payment
+        );
 
+        $this->total_payment = $newData->total_payment;
+        $this->db->update(Payment_model::table, $data, ['id' => $this->id]);
+    }
+
+    public function delete_data() {
+        $this->db->delete(Payment_model::table, ['id' => $this->id]);
     }
 
     public function set_data($data) {
@@ -77,7 +103,7 @@ class Payment_model extends CI_Model {
             $this->id = (String) $data->id;
 
         if(property_exists($data, 'total_payment'))
-            $this->total_payment = (float) $data->total_payment;
+            $this->total_payment = (int) $data->total_payment;
 
         if(property_exists($data, 'submiter'))
             $this->submiter = $data->submiter;

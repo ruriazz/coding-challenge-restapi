@@ -2233,8 +2233,19 @@ class RestController extends \CI_Controller
                     } else if(is_array($patch)) {
                         $array = array();
                         foreach ($patch as $p => $value) {
-                            $value = htmlspecialchars($value);
-                            $array = array_merge($array, ["$p" => trim($value)]);
+                            if(is_array($value)) {
+                                $nValue = array();
+                                foreach($value as $k => $v) {
+                                    $nValue = array_merge($nValue, [
+                                        "$k" => $v
+                                    ]);
+                                }
+                                
+                                $value = $nValue;
+                            } else {
+                                $value = htmlspecialchars($value);
+                            }
+                            $array = array_merge($array, ["$p" => $value]);
                         }
     
                         $data = array_merge($data, ["$key" => $array]);

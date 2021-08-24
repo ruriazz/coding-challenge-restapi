@@ -35,6 +35,22 @@ class Member_model extends CI_Model {
         $this->user = $userModel;
     }
 
+    public function get_all_data($whereClause) {
+        $data = array();
+
+        $results = $this->db->select('*')
+                            ->from(Member_model::table)
+                            ->where($whereClause)
+                            ->get()->result_array();
+
+        foreach ($results as $result) {
+            $memberModel = new Member_model($result);
+            array_push($data, $memberModel);
+        }
+
+        return $data;
+    }
+
     public function get_as_list($whereClause) {
         $results = $this->db->select('*')
                             ->from(Member_model::table)

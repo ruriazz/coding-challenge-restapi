@@ -10,8 +10,8 @@ class Payment extends RestController {
 		parent::__construct();
 
         $this->load->model('User_model');
-        $this->load->model('Payment_model');
-        $this->load->model('Member_model');
+        $this->load->model('Payment_model', 'payment_model');
+        $this->load->model('Member_model', 'member_model');
 	}
 
     public function index_get() {
@@ -20,30 +20,64 @@ class Payment extends RestController {
         $requestData = $this->special_get('id, member');
         $requestData = $requestData->data;
 
-        if($requestData->id == null)
-            $this->bad_response(['message' => 'data not found']);
+        if($requestData->id == null) {
+            if($this->auth_data->role == UserRole::Admin) {
+                $result = $this->payment_model->get_all_data();
+            } else {
+                $members = $this->member_model->get_all_data(['user' => $this->auth_data->id]);
+                $result = array();
 
-        $paymentModel = new Payment_model($requestData);
-        $paymentModel->get_data('id');
+                foreach ($members as $member) {
+                    $paymentModel = new Payment_model(['id' => $member->payment]);
+                    $paymentModel->get_data('id');
 
-        if($paymentModel->total_payment == null)
-            $this->bad_response(['message' => 'data not found']);
-
-        if($this->auth_data->role == UserRole::User) {
-            $exists = false;
-            foreach ($paymentModel->member as $member) {
-                if($member->user->id == $this->auth_data->id) {
-                    $exists = true;
-                    break;
+                    array_push($result, $paymentModel);
                 }
             }
 
-            if(!$exists) 
-                $this->bad_response(['message' => 'restricted']);
-
+            $this->response_ok(['content' => $result]);
+        } else {
+            $paymentModel = new Payment_model($requestData);
+            $paymentModel->get_data('id');
+    
+            if($paymentModel->total_payment == null)
+                $this->bad_response(['message' => 'data not found']);
+    
+            if($this->auth_data->role == UserRole::User) {
+                $exists = false;
+                foreach ($paymentModel->member as $member) {
+                    if($member->user->id == $this->auth_data->id) {
+                        $exists = true;
+                        break;
+                    }
+                }
+    
+                if(!$exists) 
+                    $this->bad_response(['message' => 'restricted']);
+    
+            }
+    
+            $this->response_ok(['content' => $paymentModel]);
         }
+    }
 
-        $this->response_ok(['content' => $paymentModel]);
+    public function index_patch() {
+        $this->is_admin();
+
+        $requestData = $this->special_patch('payment');
+        $requestData = $requestData->data;
+
+        $paymentModel = new Payment_model($requestData->payment);
+
+        $oldPayment = new Payment_model(['id' => $paymentModel->id]);
+        $oldPayment->get_data('id');
+
+        if($oldPayment->total_payment == 0)
+            $this->bad_response(['message' => 'invalid data']);
+
+        $oldPayment->update_data($paymentModel);
+
+        $this->response_ok(['content' => $oldPayment]);
     }
 
     public function index_post() {
@@ -86,5 +120,23 @@ class Payment extends RestController {
         $paymentModel->get_member();
 
         $this->response_ok(['content' => $paymentModel]);
+    }
+
+    public function index_delete() {
+        $this->is_admin();
+
+        $id = $this->uri_segment(2);
+        if($id == null)
+            $this->bad_response(['message' => 'invalid data']);
+
+        $paymentModel =  array('id' => $id);
+        $paymentModel = new Payment_model($paymentModel);
+        $paymentModel->get_data('id');
+
+        if($paymentModel->total_payment == null)
+            $this->bad_response(['message' => 'data not found']);
+
+        $paymentModel->delete_data();
+        $this->response_ok(['message' => 'payment data deleted']);
     }
 }
